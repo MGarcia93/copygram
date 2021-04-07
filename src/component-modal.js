@@ -6,8 +6,63 @@ import "firebase/database";
 import "firebase/firebase-storage";
 
 class Modal extends React.Component {
+  state={
+    user:{
+      photoURL:"",
+      displayName:""
+    },
+    txt:null,
+    uploadValue:0,
+    picture:null
+  }
   componentDidMount() {
     M.AutoInit();
+    firebase.auth().onAuthStateChanged(user=>{
+      this.setState({user});
+
+    })
+  }
+  handleChange=(e)=>{
+    e.preventDefault();
+    this.setState({
+      txt:e.target.value
+    }     
+    )
+  }
+  handleUpload=(e)=>{
+    e.preventDefault();
+    const record = {
+      avatar : this.state.user.photoURL,
+      nombre : this.state.user.displayName,
+      txt:this.state.txt,
+      pic : ""
+    };
+    const file=e.target.files[0];
+    console.log(file);
+    const storageRef= firebase.storage().ref(`fotos/${file.name}`);
+    const task = storageRef.put(file);
+    task.on("state_changed",
+    //accion mientra sube
+    snapshot=>{
+        let percentage = (snapshot.bytesTransferred/snapshot.totalBytes)/100;
+        this.setState({uploadValue:percentage});
+    },
+    error=>{
+      console.error(error)
+    },
+    //accion en success upload
+    ()=>{
+      console.log(task.snapshot);
+      record.pic=task.snapshot.metadata.fullPath;
+      storageRef.getDownloadURL()
+      .then(url=>{
+        this.setState({picture:url});
+      })
+      const db = firebase.database();
+      const newPicture=db.ref("pictures").push();      
+      newPicture.set(record);
+    })
+    
   }
   render() {
     return (
@@ -24,8 +79,8 @@ class Modal extends React.Component {
           <div className="modal-content">
             <h4>Posteá en Truchigram</h4>
             <div className="chip">
-              <img src="https://lh4.googleusercontent.com/-cK0jvQHC8ro/AAAAAAAAAAI/AAAAAAABbJk/c8c3cA-ztl0/photo.jpg" />
-              Jonatan Ariste
+              <img src={this.state.user.photoURL} />
+              {this.state.user.displayName}
             </div>
 
             <div className="row">
@@ -36,9 +91,10 @@ class Modal extends React.Component {
                     <textarea
                       id="icon_prefix2"
                       className="materialize-textarea"
+                      onChange={this.handleChange}
                     />
                     <label htmlFor="icon_prefix2">Mensaje</label>
-                    <FileUpload />
+                    <FileUpload onUpload={this.handleUpload} uploadValue={this.state.uploadValue} />
                   </div>
                 </div>
               </form>

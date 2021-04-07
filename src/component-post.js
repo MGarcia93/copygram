@@ -5,7 +5,18 @@ class Post extends React.Component {
   state = {
     url: null
   };
-
+  componentWillMount(){
+    const reference = this.props.pic;
+    if(!reference)
+      return;
+    firebase.storage().ref(reference).getDownloadURL()
+    .then(url=>{
+      this.setState({url});
+    })
+    .catch(error=>{
+      console.error(error);
+    })
+  }
   render() {
     return (
       <React.Fragment>
@@ -26,7 +37,7 @@ class Post extends React.Component {
           </div>
 
           <div className="card-image">
-            <img src={this.props.pic} alt="" />
+            <img src={this.state.url} alt="" />
           </div>
           <div className="card-content">
             <p>{this.props.txt}</p>

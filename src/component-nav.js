@@ -3,6 +3,7 @@ import Logo from "./logo.svg";
 import firebase from "firebase/app";
 
 class Nav extends React.Component {
+
   handleLogout() {
     firebase
       .auth()
@@ -13,6 +14,8 @@ class Nav extends React.Component {
       })
       .catch(error => console.log(`Error ${error.code}: ${error.message}`));
   }
+
+
   render() {
     return (
       <React.Fragment>

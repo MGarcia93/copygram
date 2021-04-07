@@ -4,6 +4,26 @@ import firebase from "firebase/app";
 import "firebase/auth";
 
 class Home extends React.Component {
+  state={
+    user:null
+  }
+  componentDidMount(){
+    firebase.auth().onAuthStateChanged((user)=>{
+      console.log("onchage");
+      this.setState({user});
+      if(this.state.user){
+        this.props.history.push('./feed');
+      }
+    })
+  }
+  handleAuth(){
+    const provider = new firebase.auth.GoogleAuthProvider();
+    firebase.auth().signInWithPopup(provider).then((response)=>{
+      console.log(response);
+      console.log(`Ingreso: ${response.user.email}`);
+      this.props.history.push('./feed');
+    }).catch((error)=>console)
+  }
   render() {
     return (
       <React.Fragment>
@@ -31,7 +51,7 @@ class Home extends React.Component {
                   </p>
                 </div>
                 <div className="card-action right-align">
-                  <button className="waves-effect waves-light btn" onClick="">
+                  <button className="waves-effect waves-light btn" onClick={this.handleAuth}>
                     Logear con Google
                   </button>
                 </div>
